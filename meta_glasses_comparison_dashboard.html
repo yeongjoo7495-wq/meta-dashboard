@@ -1,0 +1,238 @@
+
+<h2 class="sr-only">레이벤·오클리 META 스마트글라스 모델별 기능 비교 대시보드</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:1.5rem 0;font-family:var(--font-sans)}
+.top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:1.25rem}
+.top h3{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.fb{padding:4px 14px;font-size:12px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.fb.on{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:1.5rem}
+.mcard{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.mcard .ml{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.mcard .mv{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.mcard .ms{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.sec-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);letter-spacing:.04em;margin-bottom:10px}
+.tbl-wrap{overflow-x:auto;margin-bottom:1.5rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg)}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+thead th{background:var(--color-background-secondary);font-size:11px;font-weight:500;color:var(--color-text-secondary);padding:10px 12px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap}
+thead th:first-child{position:sticky;left:0;z-index:2;background:var(--color-background-secondary);min-width:110px}
+tbody tr{border-bottom:0.5px solid var(--color-border-tertiary);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--color-background-secondary)}
+tbody td{padding:10px 12px;color:var(--color-text-primary);vertical-align:top;line-height:1.5}
+tbody td:first-child{position:sticky;left:0;z-index:1;background:var(--color-background-primary);font-weight:500;font-size:11px}
+tbody tr:hover td:first-child{background:var(--color-background-secondary)}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;white-space:nowrap}
+.b-rb{background:#E6F1FB;color:#0C447C}
+.b-ok{background:#EAF3DE;color:#27500A}
+.b-y{background:#FAEEDA;color:#633806}
+.b-g{background:#EAF3DE;color:#27500A}
+.b-n{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
+.dot-y::before{content:"●";color:#639922;margin-right:4px;font-size:10px}
+.dot-n::before{content:"○";color:var(--color-text-tertiary);margin-right:4px;font-size:10px}
+.diff-row td{background:rgba(250,238,218,0.3)}
+.chart-sec{margin-bottom:1.5rem}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <h3>META 스마트글라스 모델 비교</h3>
+    <div class="filters">
+      <button class="fb on" onclick="setF('all',this)">전체</button>
+      <button class="fb" onclick="setF('레이벤',this)">레이벤</button>
+      <button class="fb" onclick="setF('오클리',this)">오클리</button>
+      <button class="fb" onclick="setF('diff',this)">차이점만 보기</button>
+    </div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <p class="sec-label">모델별 스펙 · 기능 비교</p>
+  <div class="tbl-wrap">
+    <table id="tbl">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <p class="sec-label">배터리 · 카메라 스펙 비교</p>
+  <div class="legend">
+    <span class="leg-item"><span class="leg-dot" style="background:#3266ad"></span>레이벤</span>
+    <span class="leg-item"><span class="leg-dot" style="background:#639922"></span>오클리</span>
+  </div>
+  <div style="position:relative;width:100%;height:220px;margin-bottom:1.5rem">
+    <canvas id="chart1" role="img" aria-label="모델별 배터리 사용시간 막대 차트"></canvas>
+  </div>
+
+  <p class="sec-label">렌즈 타입별 분포</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+    <div style="position:relative;width:100%;height:180px">
+      <canvas id="chart2" role="img" aria-label="레이벤 렌즈 타입 분포 도넛 차트"></canvas>
+    </div>
+    <div style="position:relative;width:100%;height:180px">
+      <canvas id="chart3" role="img" aria-label="오클리 렌즈 타입 분포 도넛 차트"></canvas>
+    </div>
+  </div>
+  <div style="display:flex;gap:24px;justify-content:center;margin-bottom:1.5rem">
+    <div style="text-align:center;font-size:11px;color:var(--color-text-secondary)">레이벤</div>
+    <div style="text-align:center;font-size:11px;color:var(--color-text-secondary)">오클리</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const models = [
+  {brand:'레이벤',name:'WAYFARER\nGEN2',code:'RW4012',shape:'웨이페어러',frame:'유광 블랙',lens:'그라파이트 그린\n트랜지션',lensType:'변색',cam:'12MP/3K',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'✕',ai:'음성비서·번역·음악·메시지·촬영',features:'핸즈프리촬영·라이브스트리밍'},
+  {brand:'레이벤',name:'WAYFARER\nGEN2',code:'RW4012',shape:'웨이페어러',frame:'유광 블랙',lens:'G-15 그린',lensType:'솔리드',cam:'12MP/3K',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'✕',ai:'음성비서·번역·음악·메시지·촬영',features:'SNS 라이브 스트리밍'},
+  {brand:'레이벤',name:'WAYFARER\nGEN2',code:'RW4012',shape:'웨이페어러',frame:'무광 블랙',lens:'클리어/블루라이트',lensType:'블루라이트',cam:'12MP/3K',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'✕',indoor:'○',sport:'✕',ai:'메시지·통화·음악·AI명령',features:'도수렌즈 호환·실내용'},
+  {brand:'레이벤',name:'SKYLER\nGEN2',code:'RW4014',shape:'캣아이',frame:'유광 블랙',lens:'그라파이트 그린\n트랜지션',lensType:'변색',cam:'12MP/3K Ultra HD',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'✕',ai:'번역·음성메시지·룩추천·AI검색',features:'핸즈프리촬영·라이브스트리밍'},
+  {brand:'레이벤',name:'SKYLER\nGEN2',code:'RW4014',shape:'캣아이',frame:'유광 블랙',lens:'G-15 그린',lensType:'솔리드',cam:'12MP/3K Ultra HD',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'✕',ai:'번역·음성메시지·룩추천·AI검색',features:'SNS 라이브 스트리밍'},
+  {brand:'레이벤',name:'BLAYZER\nGEN2',code:'RW7001',shape:'렉탱글',frame:'블랙/그린',lens:'데모/도수용',lensType:'도수호환',cam:'AI assistant',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'6 마이크',live:'○',indoor:'○',sport:'✕',ai:'사물인식·번역·스타일링·음성메시지·촬영',features:'10°회전힌지·플렉시블노즈·도수호환'},
+  {brand:'레이벤',name:'SCRIBER\nGEN2',code:'RW7002',shape:'팬토스',frame:'유광 블랙',lens:'데모 렌즈',lensType:'도수호환',cam:'AI features',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'6 마이크',live:'○',indoor:'○',sport:'✕',ai:'사물인식·번역·스타일링·음성메시지·촬영',features:'팬토스쉐입·도수호환·3K촬영'},
+  {brand:'오클리',name:'VANGUARD\nPrizm Road',code:'OW8001',shape:'랩어라운드',frame:'유광 블랙',lens:'Prizm Road',lensType:'프리즘',cam:'12MP/3K',bat:9,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'○',ai:'음성제어·촬영·음악재생',features:'터치컨트롤·핸즈프리촬영·스포츠'},
+  {brand:'오클리',name:'VANGUARD\nPrizm Black',code:'OW8001',shape:'랩어라운드',frame:'유광 블랙',lens:'Prizm Black',lensType:'프리즘',cam:'12MP/3K',bat:9,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'○',ai:'음성제어·촬영·음악재생',features:'터치컨트롤·핸즈프리촬영·스포츠'},
+  {brand:'오클리',name:'VANGUARD\nTransitions',code:'OW8001',shape:'랩어라운드',frame:'유광 블랙',lens:'Prizm Transitions',lensType:'프리즘변색',cam:'12MP/3K',bat:9,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'○',ai:'음성제어·촬영·음악재생',features:'터치컨트롤·변색렌즈·스포츠'},
+  {brand:'오클리',name:'HSTN\nPrizm Black',code:'OW8002',shape:'라운드',frame:'유광 블랙',lens:'Prizm Black',lensType:'프리즘',cam:'12MP/3K',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'✕',sport:'○',ai:'음성제어·음악·촬영',features:'터치컨트롤·스포츠디자인'},
+  {brand:'오클리',name:'HSTN\nClear',code:'OW8002',shape:'라운드',frame:'유광 블랙',lens:'Clear',lensType:'클리어',cam:'12MP/3K',bat:8,storage:'32GB',wifi:'Wi-Fi 6E',bt:'BT 5.3',mic:'5 마이크',live:'○',indoor:'○',sport:'○',ai:'음성제어·음악·촬영',features:'터치컨트롤·스포츠디자인·실내용'},
+];
+
+const rows = [
+  {key:'brand',label:'브랜드'},
+  {key:'shape',label:'프레임 쉐입'},
+  {key:'frame',label:'프레임 컬러'},
+  {key:'lensType',label:'렌즈 타입'},
+  {key:'lens',label:'렌즈 컬러'},
+  {key:'cam',label:'카메라'},
+  {key:'bat',label:'배터리',fmt:v=>v+'시간'},
+  {key:'storage',label:'저장공간'},
+  {key:'wifi',label:'Wi-Fi'},
+  {key:'bt',label:'블루투스'},
+  {key:'mic',label:'마이크'},
+  {key:'live',label:'라이브 스트리밍'},
+  {key:'indoor',label:'실내/도수 호환'},
+  {key:'sport',label:'스포츠 최적화'},
+  {key:'ai',label:'Meta AI 기능'},
+  {key:'features',label:'주요 Features'},
+];
+
+const diffKeys = new Set(['shape','lensType','bat','mic','live','indoor','sport','ai','features']);
+
+let curFilter = 'all';
+let c1,c2,c3;
+
+function setF(f, btn) {
+  curFilter = f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAll();
+}
+
+function getVisible() {
+  if(curFilter==='all') return models;
+  if(curFilter==='diff') return models;
+  return models.filter(m=>m.brand===curFilter);
+}
+
+function renderCards() {
+  const vis = curFilter==='diff'?models:getVisible();
+  const rb = vis.filter(m=>m.brand==='레이벤').length;
+  const ok = vis.filter(m=>m.brand==='오클리').length;
+  const maxBat = Math.max(...vis.map(m=>m.bat));
+  const hasUltra = vis.some(m=>m.cam.includes('Ultra'));
+  document.getElementById('cards').innerHTML=`
+    <div class="mcard"><div class="ml">표시 모델 수</div><div class="mv">${vis.length}<span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)"> 개</span></div><div class="ms">레이벤 ${rb} · 오클리 ${ok}</div></div>
+    <div class="mcard"><div class="ml">최대 배터리</div><div class="mv">${maxBat}<span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)"> h</span></div><div class="ms">오클리 VANGUARD 기준</div></div>
+    <div class="mcard"><div class="ml">Ultra HD 카메라</div><div class="mv">${hasUltra?'2':'0'}<span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)"> 모델</span></div><div class="ms">SKYLER GEN2 전용</div></div>
+    <div class="mcard"><div class="ml">저장공간</div><div class="mv">32<span style="font-size:13px;font-weight:400;color:var(--color-text-secondary)"> GB</span></div><div class="ms">전 모델 동일</div></div>
+  `;
+}
+
+function renderTable() {
+  const vis = getVisible();
+  const isDiff = curFilter==='diff';
+
+  const thead = document.getElementById('thead');
+  thead.innerHTML = '<tr><th>항목</th>' + vis.map(m=>`<th><span class="badge ${m.brand==='레이벤'?'b-rb':'b-ok'}">${m.brand}</span><br><span style="font-size:11px;color:var(--color-text-primary);font-weight:500;white-space:pre-line">${m.name}</span></th>`).join('') + '</tr>';
+
+  const tbody = document.getElementById('tbody');
+  let html = '';
+  for(const row of rows) {
+    if(isDiff && !diffKeys.has(row.key)) continue;
+    const vals = vis.map(m=>row.fmt?row.fmt(m[row.key]):m[row.key]);
+    const allSame = new Set(vals).size===1;
+    if(isDiff && allSame) continue;
+    const rowClass = !allSame && isDiff ? 'diff-row' : '';
+    html += `<tr class="${rowClass}"><td>${row.label}${!allSame?'<span style="font-size:9px;color:#BA7517;margin-left:4px">차이</span>':''}</td>`;
+    for(const v of vals) {
+      let cell = v;
+      if(v==='○') cell=`<span class="dot-y"style="color:var(--color-text-primary);font-size:11px">있음</span>`;
+      else if(v==='✕') cell=`<span class="dot-n"style="color:var(--color-text-tertiary);font-size:11px">없음</span>`;
+      else if(row.key==='brand') cell=`<span class="badge ${v==='레이벤'?'b-rb':'b-ok'}">${v}</span>`;
+      else if(row.key==='lensType') cell=`<span class="badge b-y">${v}</span>`;
+      html += `<td style="font-size:11px;white-space:pre-line">${cell}</td>`;
+    }
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+function renderCharts() {
+  const vis = models;
+  if(c1) c1.destroy();
+  if(c2) c2.destroy();
+  if(c3) c3.destroy();
+
+  const labels = vis.map(m=>m.name.replace('\n',' '));
+  const colors = vis.map(m=>m.brand==='레이벤'?'#3266ad':'#639922');
+  const bats = vis.map(m=>m.bat);
+
+  c1 = new Chart(document.getElementById('chart1'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'배터리(h)',data:bats,backgroundColor:colors,borderRadius:4,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y}시간`}}},
+      scales:{
+        x:{ticks:{font:{size:10},maxRotation:40,autoSkip:false},grid:{display:false}},
+        y:{min:7,max:10,ticks:{font:{size:10},callback:v=>v+'h'},grid:{color:'rgba(128,128,128,0.1)'}}
+      }
+    }
+  });
+
+  const rbLens = {};
+  const okLens = {};
+  for(const m of models){
+    const t = m.lensType;
+    if(m.brand==='레이벤') rbLens[t]=(rbLens[t]||0)+1;
+    else okLens[t]=(okLens[t]||0)+1;
+  }
+  const rbK=Object.keys(rbLens), rbV=Object.values(rbLens);
+  const okK=Object.keys(okLens), okV=Object.values(okLens);
+  const rbColors=['#3266ad','#185FA5','#85B7EB','#B5D4F4','#E6F1FB'];
+  const okColors=['#639922','#3B6D11','#97C459','#C0DD97','#EAF3DE'];
+
+  c2=new Chart(document.getElementById('chart2'),{
+    type:'doughnut',
+    data:{labels:rbK,datasets:[{data:rbV,backgroundColor:rbColors.slice(0,rbK.length),borderWidth:1,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}}}
+  });
+  c3=new Chart(document.getElementById('chart3'),{
+    type:'doughnut',
+    data:{labels:okK,datasets:[{data:okV,backgroundColor:okColors.slice(0,okK.length),borderWidth:1,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}}}
+  });
+}
+
+function renderAll(){
+  renderCards();
+  renderTable();
+  renderCharts();
+}
+
+renderAll();
+</script>
